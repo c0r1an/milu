@@ -24,5 +24,7 @@ public sealed class AdminModule : IMiluModule
 
     public bool ShowInFrontendNavigation => false;
 
+    public bool IsCoreModule => true;
+
     public int SortOrder => 0;
 }

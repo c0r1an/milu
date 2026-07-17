@@ -1,3 +1,4 @@
-﻿@{
-    Layout = "_Layout";
+@inject Milu.Web.Infrastructure.Layouts.ILayoutManager LayoutManager
+@{
+    Layout = await LayoutManager.GetActiveViewPathAsync();
 }

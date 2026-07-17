@@ -1,4 +1,6 @@
 @inject IModuleCatalog ModuleCatalog
+@inject Milu.Web.Infrastructure.Updates.IMiluUpdateService UpdateService
+@{ var miluUpdate = await UpdateService.CheckAsync(); }
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -29,6 +31,8 @@
                 <nav class="nav nav-pills flex-column gap-1">
                     <a class="nav-link" href="/admin">Übersicht</a>
                     <a class="nav-link fw-semibold" href="/admin/modules">Module</a>
+                    <a class="nav-link fw-semibold" href="/admin/layouts">Layouts</a>
+                    <a class="nav-link fw-semibold d-flex justify-content-between" href="/admin/updates"><span>Milu-Updates</span>@if (miluUpdate.UpdateAvailable) { <span class="badge text-bg-warning">Neu</span> }</a>
                     <div class="border-top mt-2 pt-2">
                         @foreach (var module in ModuleCatalog.Modules.Where(item => item.HasAdminArea))
                         {
@@ -47,6 +51,9 @@
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/tinymce-package/tinymce.min.js"></script>
+    <script src="/modules/media/media-picker.js"></script>
+    <script src="~/js/milu-editor.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

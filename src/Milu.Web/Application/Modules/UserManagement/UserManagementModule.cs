@@ -16,5 +16,6 @@ public sealed class UserManagementModule : IMiluModule
     public string FrontendRoute => "/account/register";
     public string AdminRoute => "/admin/users";
     public bool ShowInFrontendNavigation => false;
+    public bool IsCoreModule => true;
     public int SortOrder => 5;
 }

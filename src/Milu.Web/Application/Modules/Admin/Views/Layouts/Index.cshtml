@@ -1,0 +1,14 @@
+@model IReadOnlyCollection<Milu.Web.Infrastructure.Layouts.LayoutInfo>
+@{ ViewData["Title"] = "Layouts"; }
+<div class="d-flex justify-content-between align-items-start mb-4"><div><h1>Frontend-Layouts</h1><p class="text-muted">Layouts aktivieren, deaktivieren, aktualisieren oder entfernen.</p></div><span class="badge text-bg-primary fs-6">@Model.Count installiert</span></div>
+@if (TempData["SuccessMessage"] is string success) { <div class="alert alert-success">@success</div> }
+@if (TempData["ErrorMessage"] is string error) { <div class="alert alert-danger">@error</div> }
+<div class="row g-4">@foreach (var layout in Model) { <div class="col-lg-4"><article class="card h-100 @(layout.IsActive ? "border-primary" : "")"><div class="card-body d-flex flex-column">
+<div class="d-flex justify-content-between"><h2 class="h4">@layout.DisplayName</h2>@if (layout.IsActive) { <span class="badge text-bg-success">Verwendet</span> } else if (!layout.IsEnabled) { <span class="badge text-bg-secondary">Deaktiviert</span> }</div>
+<p class="text-muted flex-grow-1">@layout.Description</p><div class="small mb-3">Installiert: <strong>v@layout.InstalledVersion</strong><br />Verfügbar: <strong>v@layout.AvailableVersion</strong>@if (layout.HasUpdate) { <span class="badge text-bg-warning ms-1">Update verfügbar</span> }</div>
+<div class="d-flex flex-wrap gap-2">@if (layout.IsEnabled && !layout.IsActive) { <form method="post" action="/admin/layouts/activate/@layout.Key">@Html.AntiForgeryToken()<button class="btn btn-sm btn-primary">Verwenden</button></form> }
+@if (!layout.IsEnabled) { <form method="post" action="/admin/layouts/enable/@layout.Key">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-success">Aktivieren</button></form> }
+else if (!layout.IsProtected && !layout.IsActive) { <form method="post" action="/admin/layouts/disable/@layout.Key">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-secondary">Deaktivieren</button></form> }
+@if (layout.HasUpdate) { <form method="post" action="/admin/layouts/update/@layout.Key">@Html.AntiForgeryToken()<button class="btn btn-sm btn-warning">Aktualisieren</button></form> }
+@if (!layout.IsProtected && !layout.IsActive) { <form method="post" action="/admin/layouts/delete/@layout.Key" onsubmit="return confirm('Layout wirklich löschen?')">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-danger">Löschen</button></form> }
+@if (layout.IsProtected) { <span class="badge text-bg-dark align-self-center">Fallback · geschützt</span> }</div></div></article></div> }</div>

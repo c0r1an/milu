@@ -1,3 +1,4 @@
+@inject Milu.Web.Infrastructure.Layouts.ILayoutManager LayoutManager
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = await LayoutManager.GetActiveViewPathAsync();
 }

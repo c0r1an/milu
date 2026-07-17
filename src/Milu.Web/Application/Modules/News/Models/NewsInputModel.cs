@@ -21,4 +21,7 @@ public sealed class NewsInputModel
 
     [Display(Name = "Veröffentlicht")]
     public bool IsPublished { get; set; } = true;
+
+    [Display(Name = "Titelmedium")]
+    public int? FeaturedMediaId { get; set; }
 }

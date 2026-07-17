@@ -1,4 +1,4 @@
-@model IReadOnlyCollection<NewsArticle>
+@model PagedResult<NewsArticle>
 
 @{
     ViewData["Title"] = "News verwalten";
@@ -28,7 +28,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var article in Model)
+            @foreach (var article in Model.Items)
             {
                 <tr>
                     <td>@article.Title</td>
@@ -50,3 +50,4 @@
         </tbody>
     </table>
 </div>
+<partial name="_Pagination" model="@(new PaginationViewModel(Model.Page, Model.TotalPages, "/admin/news/index/index"))" />

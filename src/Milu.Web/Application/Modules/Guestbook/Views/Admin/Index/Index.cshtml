@@ -1,4 +1,4 @@
-@model IReadOnlyCollection<GuestbookEntry>
+@model PagedResult<GuestbookEntry>
 
 @{
     ViewData["Title"] = "Gästebuch verwalten";
@@ -28,7 +28,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var entry in Model)
+            @foreach (var entry in Model.Items)
             {
                 <tr>
                     <td>@entry.Name</td>
@@ -46,3 +46,4 @@
         </tbody>
     </table>
 </div>
+<partial name="_Pagination" model="@(new PaginationViewModel(Model.Page, Model.TotalPages, "/admin/guestbook/index/index"))" />

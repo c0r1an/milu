@@ -1,0 +1,39 @@
+name: Build Milu release package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  package-windows:
+    runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Publish
+        shell: pwsh
+        run: |
+          $version = $env:RELEASE_TAG.TrimStart('v')
+          dotnet publish src/Milu.Web/Milu.Web.csproj --configuration Release --runtime win-x64 --self-contained false --property:Version=$version --output artifacts/publish
+      - name: Create package and checksum
+        shell: pwsh
+        run: |
+          Compress-Archive -Path artifacts/publish/* -DestinationPath artifacts/milu-win-x64.zip
+          (Get-FileHash artifacts/milu-win-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant() | Set-Content artifacts/milu-win-x64.zip.sha256 -NoNewline
+      - name: Upload assets to release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload $env:RELEASE_TAG artifacts/milu-win-x64.zip artifacts/milu-win-x64.zip.sha256 --clobber

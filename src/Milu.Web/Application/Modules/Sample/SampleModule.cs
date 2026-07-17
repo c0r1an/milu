@@ -18,5 +18,7 @@ public sealed class SampleModule : IMiluModule
 
     public string Description => "Beispiel für Routing, Views und Modulregistrierung.";
 
+    public bool IsCoreModule => true;
+
     public int SortOrder => 900;
 }

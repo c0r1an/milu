@@ -13,4 +13,6 @@ public sealed class NewsArticle
     public DateTime PublishedAt { get; set; }
 
     public bool IsPublished { get; set; }
+
+    public int? FeaturedMediaId { get; set; }
 }

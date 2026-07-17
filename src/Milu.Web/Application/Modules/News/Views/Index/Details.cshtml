@@ -11,5 +11,9 @@
         <h1 class="mt-2">@Model.Title</h1>
         <p class="lead">@Model.Summary</p>
     </header>
-    <div style="white-space: pre-wrap">@Model.Content</div>
+    @if (Model.FeaturedMediaId.HasValue)
+    {
+        <img class="img-fluid rounded mb-4" src="/media/file/index/id/@Model.FeaturedMediaId" alt="@Model.Title" />
+    }
+    <div class="milu-rich-content">@Html.Raw(Model.Content)</div>
 </article>

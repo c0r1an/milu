@@ -23,7 +23,7 @@ public sealed partial class MiluApplicationTests :
     [InlineData("/sample/index/index", "Sample-Modul")]
     [InlineData("/sample/index/hello/name/Ada", "Hallo, Ada!")]
     [InlineData("/guestbook", "Eintrag schreiben")]
-    [InlineData("/news", "Milu ist modular")]
+    [InlineData("/news", "Aktuelle Beitr")]
     public async Task FrontendRoutes_ReturnExpectedViews(
         string path,
         string expectedText)
@@ -320,6 +320,86 @@ public sealed partial class MiluApplicationTests :
         Assert.DoesNotContain(
             uniqueName + "-bearbeitet",
             await client.GetStringAsync("/guestbook"));
+    }
+
+    [Fact]
+    public async Task NewsArticle_WithRichText_CanBeCreated()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, "/admin/news/index/create");
+        var createPage = await client.GetStringAsync("/admin/news/index/create");
+        var title = $"TinyMCE-{Guid.NewGuid():N}";
+
+        var response = await client.PostAsync(
+            "/admin/news/index/create",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["Title"] = title,
+                ["Summary"] = "Zusammenfassung des Integrationstests.",
+                ["Content"] = "<p>Inhalt aus <strong>TinyMCE</strong>.</p>",
+                ["IsPublished"] = "true",
+                ["__RequestVerificationToken"] = GetAntiforgeryToken(createPage)
+            }));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Contains(title, await client.GetStringAsync("/news"));
+    }
+
+    [Fact]
+    public async Task NewsValidation_PreservesRichTextContent()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, "/admin/news/index/create");
+        var createPage = await client.GetStringAsync("/admin/news/index/create");
+        const string content = "<p>Dieser <strong>Editorinhalt</strong> darf nicht verloren gehen.</p>";
+
+        var response = await client.PostAsync(
+            "/admin/news/index/create",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["Title"] = string.Empty,
+                ["Summary"] = "Eine gültige Zusammenfassung.",
+                ["Content"] = content,
+                ["__RequestVerificationToken"] = GetAntiforgeryToken(createPage)
+            }));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var responseHtml = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Bitte gib einen Titel ein.", responseHtml);
+        Assert.Contains("Dieser &lt;strong&gt;Editorinhalt&lt;/strong&gt; darf nicht verloren gehen.", responseHtml);
+    }
+
+    [Fact]
+    public async Task NewsArticle_CanBeEditedWithPrefixedRichTextFields()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, "/admin/news/index/create");
+        var createPage = await client.GetStringAsync("/admin/news/index/create");
+        var title = $"Bearbeiten-{Guid.NewGuid():N}";
+        await client.PostAsync("/admin/news/index/create", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["Title"] = title, ["Summary"] = "Ursprüngliche Zusammenfassung.",
+            ["Content"] = "<p>Ursprünglicher Inhalt.</p>", ["IsPublished"] = "true",
+            ["__RequestVerificationToken"] = GetAntiforgeryToken(createPage)
+        }));
+
+        var adminHtml = await client.GetStringAsync("/admin/news/index/index");
+        var idMatch = Regex.Match(adminHtml, $"{Regex.Escape(title)}.*?/admin/news/index/edit/id/(\\d+)", RegexOptions.Singleline);
+        Assert.True(idMatch.Success);
+        var editUrl = $"/admin/news/index/edit/id/{idMatch.Groups[1].Value}";
+        var editPage = await client.GetStringAsync(editUrl);
+        var updatedTitle = title + "-aktualisiert";
+        var response = await client.PostAsync(editUrl, new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["Input.Title"] = updatedTitle,
+            ["Input.Summary"] = "Aktualisierte Zusammenfassung.",
+            ["Input.Content"] = "<p>Aktualisierter <strong>Inhalt</strong>.</p>",
+            ["Input.IsPublished"] = "true",
+            ["__RequestVerificationToken"] = GetAntiforgeryToken(editPage)
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Contains(updatedTitle, await client.GetStringAsync("/news"));
     }
 
     [Fact]

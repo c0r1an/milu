@@ -4,22 +4,23 @@ using Milu.Web.Infrastructure.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Milu.Web.Infrastructure.Pagination;
 
 namespace Milu.Web.Application.Modules.Guestbook.Controllers.Admin;
 
 [Area(GuestbookModule.ModuleArea)]
 [Authorize]
 [MiluPermission("guestbook", PermissionOperation.ModuleView)]
-public sealed class AdminIndexController(MiluDbContext database) : Controller
+public sealed class AdminIndexController(MiluDbContext database, IPaginationSettings pagination) : Controller
 {
     [HttpGet]
     [MiluPermission("guestbook", PermissionOperation.ContentView)]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1)
     {
         var entries = await database.GuestbookEntries
             .AsNoTracking()
             .OrderByDescending(entry => entry.CreatedAt)
-            .ToArrayAsync();
+            .ToPagedResultAsync(page, await pagination.GetPageSizeAsync("guestbook"));
 
         return View(entries);
     }

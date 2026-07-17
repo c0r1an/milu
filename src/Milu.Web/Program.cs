@@ -6,11 +6,27 @@ using Milu.Web.Infrastructure.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Milu.Web.Application.Modules.Media.Services;
+using Microsoft.AspNetCore.DataProtection;
+using Milu.Web.Infrastructure.Pagination;
+using Milu.Web.Infrastructure.Layouts;
+using Milu.Web.Infrastructure.Updates;
+using System.Net.Http.Headers;
+using Ganss.Xss;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 var dataDirectory = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
 Directory.CreateDirectory(dataDirectory);
+var keyDirectory = Path.Combine(dataDirectory, "keys");
+Directory.CreateDirectory(keyDirectory);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keyDirectory))
+    .SetApplicationName("Milu");
 var contentConnectionString = ResolveConnectionString("Milu", "milu.db");
 var identityConnectionString = ResolveConnectionString("MiluIdentity", "identity.db");
 
@@ -52,6 +68,21 @@ builder.Services.Configure<SecurityStampValidatorOptions>(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IMiluPermissionService, MiluPermissionService>();
+builder.Services.AddScoped<IMediaLibrary, MediaLibrary>();
+var htmlSanitizer = new HtmlSanitizer();
+htmlSanitizer.AllowedAttributes.Add("data-milu-media-id");
+htmlSanitizer.AllowedTags.Add("video");
+htmlSanitizer.AllowedTags.Add("source");
+htmlSanitizer.AllowedAttributes.Add("controls");
+htmlSanitizer.AllowedAttributes.Add("preload");
+htmlSanitizer.AllowedAttributes.Add("poster");
+htmlSanitizer.AllowedAttributes.Add("type");
+htmlSanitizer.AllowedAttributes.Add("width");
+htmlSanitizer.AllowedAttributes.Add("height");
+htmlSanitizer.AllowedCssProperties.Add("width");
+htmlSanitizer.AllowedCssProperties.Add("height");
+htmlSanitizer.AllowedCssProperties.Add("max-width");
+builder.Services.AddSingleton(htmlSanitizer);
 
 builder.Services
     .AddControllersWithViews(options =>
@@ -65,6 +96,26 @@ builder.Services
 
 builder.Services.AddMiluModulesFromAssembly(typeof(Program).Assembly);
 builder.Services.AddSingleton<MiluRouteParser>();
+builder.Services.AddScoped<IStartPageResolver, StartPageResolver>();
+builder.Services.AddScoped<IPaginationSettings, PaginationSettings>();
+builder.Services.AddScoped<ILayoutManager, LayoutManager>();
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient("MiluGitHubUpdates", client =>
+{
+    client.BaseAddress = new Uri("https://api.github.com/");
+    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Milu", "1.0"));
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+    client.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2026-03-10");
+    client.Timeout = TimeSpan.FromSeconds(10);
+    var githubToken = builder.Configuration["Updates:GitHubToken"];
+    if (!string.IsNullOrWhiteSpace(githubToken))
+    {
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", githubToken);
+    }
+});
+builder.Services.AddScoped<IMiluUpdateService, GitHubMiluUpdateService>();
+builder.Services.AddHttpClient("MiluReleaseAssets", client => client.Timeout = TimeSpan.FromMinutes(10));
+builder.Services.AddScoped<IMiluUpdateInstaller, WindowsMiluUpdateInstaller>();
 builder.Services.AddTransient<MiluRouteTransformer>();
 
 var app = builder.Build();
@@ -73,6 +124,7 @@ using (var scope = app.Services.CreateScope())
 {
     var database = scope.ServiceProvider.GetRequiredService<MiluDbContext>();
     database.Database.EnsureCreated();
+    MiluMediaSchema.EnsureCreated(database);
     MiluDataSeeder.Seed(database);
     await MiluIdentitySeeder.SeedAsync(scope.ServiceProvider);
 }

@@ -1,0 +1,54 @@
+@model MediaLibraryViewModel
+@{
+    ViewData["Title"] = Model.Picker ? "Medium auswählen" : "Medien";
+    if (Model.Picker)
+    {
+        Layout = "/Application/Modules/Media/Views/Admin/_PickerLayout.cshtml";
+    }
+}
+
+@if (!Model.Picker)
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div><h1 class="mb-1">Medien</h1><p class="text-muted mb-0">Zentrale Bibliothek für Bilder, Videos, Audio und Dokumente.</p></div>
+    </div>
+}
+
+<div id="mediaDropzone" class="media-dropzone mb-4" tabindex="0">
+    @Html.AntiForgeryToken()
+    <strong>Dateien hier ablegen</strong><span> oder </span>
+    <button type="button" class="btn btn-sm btn-primary" id="mediaBrowse">Dateien auswählen</button>
+    <input type="file" id="mediaFiles" multiple hidden />
+    <div class="small text-muted mt-2">Maximal 100 MB pro Anfrage</div>
+</div>
+
+<form method="get" class="input-group mb-4">
+    @if (Model.Picker) { <input type="hidden" name="picker" value="true" /> }
+    <input class="form-control" name="q" value="@Model.Query" placeholder="Medien durchsuchen …" />
+    <button class="btn btn-outline-secondary">Suchen</button>
+</form>
+
+<div id="mediaGrid" class="media-grid" data-picker="@Model.Picker.ToString().ToLowerInvariant()">
+@foreach (var asset in Model.Assets)
+{
+    var used = Model.UsageCounts.GetValueOrDefault(asset.Id);
+    <article class="media-card" data-id="@asset.Id" data-url="/media/file/index/id/@asset.Id" data-title="@asset.Title" data-alt="@asset.AltText" data-type="@asset.ContentType">
+        <div class="media-preview">
+            @if (asset.ContentType.StartsWith("image/")) { <img src="/media/file/index/id/@asset.Id" alt="@asset.AltText" loading="lazy" /> }
+            else { <span class="media-file-icon">@System.IO.Path.GetExtension(asset.FileName).TrimStart('.').ToUpperInvariant()</span> }
+        </div>
+        <div class="p-3">
+            <div class="fw-semibold text-truncate" title="@asset.FileName">@(string.IsNullOrWhiteSpace(asset.Title) ? asset.FileName : asset.Title)</div>
+            <div class="small text-muted">@FormatSize(asset.Size) · @used Verwendung(en)</div>
+            <div class="d-flex gap-2 mt-2">
+                @if (Model.Picker) { <button type="button" class="btn btn-sm btn-primary media-select">Auswählen</button> }
+                <a class="btn btn-sm btn-outline-secondary" href="/admin/media/index/details/id/@asset.Id">Verwalten</a>
+            </div>
+        </div>
+    </article>
+}
+</div>
+<partial name="_Pagination" model="@(new PaginationViewModel(Model.Page, Model.TotalPages, Model.Picker ? "/admin/media/index/index?picker=true" : "/admin/media/index/index", Model.Query))" />
+
+@functions { static string FormatSize(long bytes) => bytes >= 1048576 ? $"{bytes / 1048576d:0.#} MB" : $"{Math.Max(1, bytes / 1024d):0} KB"; }
+@section Scripts { <script src="/modules/media/media.js"></script> }

@@ -22,5 +22,7 @@ public interface IMiluModule
 
     bool ShowInFrontendNavigation => true;
 
+    bool IsCoreModule => false;
+
     int SortOrder => 100;
 }

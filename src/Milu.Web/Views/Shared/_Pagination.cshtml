@@ -1,0 +1,22 @@
+@model PaginationViewModel
+@if (Model.TotalPages > 1)
+{
+    <nav class="mt-4" aria-label="Seitennavigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.Page <= 1 ? "disabled" : "")"><a class="page-link" href="@PageUrl(Model.Page - 1)">Zurück</a></li>
+            @for (var page = 1; page <= Model.TotalPages; page++)
+            {
+                <li class="page-item @(page == Model.Page ? "active" : "")"><a class="page-link" href="@PageUrl(page)">@(page)</a></li>
+            }
+            <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")"><a class="page-link" href="@PageUrl(Model.Page + 1)">Weiter</a></li>
+        </ul>
+    </nav>
+}
+@functions {
+    string PageUrl(int page)
+    {
+        var separator = Model.BaseUrl.Contains('?') ? "&" : "?";
+        var query = string.IsNullOrWhiteSpace(Model.Query) ? "" : $"&q={Uri.EscapeDataString(Model.Query)}";
+        return $"{Model.BaseUrl}{separator}page={page}{query}";
+    }
+}

@@ -1,0 +1,35 @@
+@model UpdateAdminViewModel
+@{ ViewData["Title"] = "Milu-Updates"; }
+<div class="d-flex justify-content-between align-items-start mb-4"><div><h1>Milu aktualisieren</h1><p class="text-muted">Automatische Prüfung veröffentlichter GitHub-Releases.</p></div><a class="btn btn-outline-primary" href="/admin/updates?refresh=true">Jetzt prüfen</a></div>
+@if (TempData["SuccessMessage"] is string success) { <div class="alert alert-success">@success</div> }
+@if (TempData["ErrorMessage"] is string error) { <div class="alert alert-danger">@error</div> }
+<section class="card mb-4"><div class="card-body"><h2 class="h5">GitHub-Quelle</h2><label class="form-label">Festes Release-Repository</label><div class="input-group"><span class="input-group-text">github.com/</span><input class="form-control" value="@Model.Repository" readonly aria-readonly="true" /></div><div class="form-text">Die Quelle ist fest in Milu hinterlegt. Eine spätere Beta-Auswahl wird als eigener Updatekanal ergänzt.</div></div></section>
+<section class="card"><div class="card-body">
+@if (!Model.Release.IsConfigured) { <div class="alert alert-info mb-0">Bitte zuerst das öffentliche GitHub-Repository konfigurieren.</div> }
+else if (Model.Release.Error is not null) { <div class="alert @(Model.Release.Error.Contains("noch kein öffentliches Release") ? "alert-info" : "alert-danger") mb-0">@Model.Release.Error@if (Model.Release.ReleaseUrl is not null) { <br /><a href="@Model.Release.ReleaseUrl" target="_blank" rel="noopener">Releases auf GitHub öffnen</a> }</div> }
+else { <div class="d-flex justify-content-between flex-wrap gap-3"><div><div class="text-muted">Installierte Version</div><div class="display-6">v@Model.Release.CurrentVersion</div></div><div><div class="text-muted">Neuestes Release</div><div class="display-6">@(Model.Release.LatestVersion ?? "–")</div></div></div>
+@if (Model.Release.UpdateAvailable) { <div class="alert alert-warning mt-4"><strong>Ein Update ist verfügbar.</strong> Prüfe die Release-Hinweise und das bereitgestellte Installationspaket.</div> } else { <div class="alert alert-success mt-4">Milu ist auf dem aktuellen Stand.</div> }
+<h2 class="h5 mt-4">@(Model.Release.Name ?? Model.Release.LatestVersion)</h2>@if (Model.Release.PublishedAt.HasValue) { <p class="small text-muted">Veröffentlicht am @Model.Release.PublishedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p> }<div style="white-space:pre-wrap">@Model.Release.Notes</div>
+@if (Model.Release.ReleaseUrl is not null) { <a class="btn btn-primary mt-4" href="@Model.Release.ReleaseUrl" target="_blank" rel="noopener">Release auf GitHub öffnen</a> }
+@if (Model.Release.UpdateAvailable)
+{
+    @if (Model.Release.PackageUrl is not null && Model.Release.ChecksumUrl is not null)
+    {
+        <form method="post" action="/admin/updates/install" class="card border-warning mt-4" onsubmit="return confirm('Milu wird beendet und auf @Model.Release.LatestVersion aktualisiert. Update jetzt wirklich installieren?');">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="version" value="@Model.Release.LatestVersion" />
+            <div class="card-body">
+                <h3 class="h5">Update installieren</h3>
+                <p>Vor dem Austausch wird ein Backup angelegt. <code>App_Data</code> mit Datenbanken und Uploads bleibt erhalten.</p>
+                <div class="form-check mb-3"><input class="form-check-input" type="checkbox" value="true" id="confirmInstallation" name="confirmInstallation" required /><label class="form-check-label" for="confirmInstallation">Ich bestätige ausdrücklich, dass @Model.Release.LatestVersion jetzt installiert und Milu neu gestartet werden soll.</label></div>
+                <button class="btn btn-warning" type="submit">Herunterladen und installieren</button>
+            </div>
+        </form>
+    }
+    else
+    {
+        <div class="alert alert-info mt-4">Dieses Release enthält noch kein <code>milu-win-x64.zip</code> mit SHA-256-Datei. Starte den Release-Paket-Workflow oder veröffentliche ein neues Release.</div>
+    }
+}
+}
+</div></section>

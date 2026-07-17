@@ -6,16 +6,22 @@ namespace Milu.Web.Infrastructure.Routing;
 
 public sealed class MiluRouteTransformer(
     MiluRouteParser parser,
-    IModuleCatalog moduleCatalog) : DynamicRouteValueTransformer
+    IModuleCatalog moduleCatalog,
+    IStartPageResolver startPageResolver) : DynamicRouteValueTransformer
 {
-    public override ValueTask<RouteValueDictionary> TransformAsync(
+    public override async ValueTask<RouteValueDictionary> TransformAsync(
         HttpContext httpContext,
         RouteValueDictionary values)
     {
-        var route = parser.Parse(values["path"]?.ToString());
+        var path = values["path"]?.ToString();
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            path = await startPageResolver.ResolveAsync(httpContext.RequestAborted);
+        }
+        var route = parser.Parse(path);
         if (route is null || !moduleCatalog.TryGet(route.Module, out var module))
         {
-            return ValueTask.FromResult<RouteValueDictionary>(null!);
+            return null!;
         }
 
         var controllerName = ToPascalCase(route.Controller);
@@ -37,7 +43,7 @@ public sealed class MiluRouteTransformer(
             result[parameter.Key] = parameter.Value;
         }
 
-        return ValueTask.FromResult(result);
+        return result;
     }
 
     private static string ToPascalCase(string value)
