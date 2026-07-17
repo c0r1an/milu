@@ -1,0 +1,34 @@
+@model AdminSampleViewModel
+
+@{
+    ViewData["Title"] = "Sample-Administration";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Sample-Administration</h1>
+        <p class="text-muted mb-0">Geschützt mit ASP.NET-Core-Cookie-Authentifizierung.</p>
+    </div>
+    <span class="badge text-bg-success">Angemeldet als @Model.CurrentUser</span>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <h2 class="h4">Geschützte Testaktion</h2>
+        <p>Serverzeit: @Model.ServerTime.ToString("dd.MM.yyyy HH:mm:ss zzz")</p>
+
+        <form action="/admin/sample/index/save" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label for="message" class="form-label">Nachricht</label>
+                <input id="message" name="message" class="form-control" value="Milu funktioniert" />
+            </div>
+            <button type="submit" class="btn btn-primary">Admin-Aktion speichern</button>
+        </form>
+    </div>
+</div>

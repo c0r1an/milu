@@ -1,0 +1,27 @@
+@model GuestbookEditViewModel
+
+@{
+    ViewData["Title"] = "Gästebucheintrag bearbeiten";
+}
+
+<h1>Gästebucheintrag bearbeiten</h1>
+<p class="text-muted">Erstellt am @Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+
+<form action="/admin/guestbook/index/edit/id/@Model.Id" method="post" class="card">
+    @Html.AntiForgeryToken()
+    <div class="card-body">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="Input.Name" class="form-label"></label>
+            <input asp-for="Input.Name" name="Name" class="form-control" maxlength="80" />
+            <span asp-validation-for="Input.Name" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.Message" class="form-label"></label>
+            <textarea asp-for="Input.Message" name="Message" class="form-control" rows="7" maxlength="1000"></textarea>
+            <span asp-validation-for="Input.Message" class="text-danger"></span>
+        </div>
+        <button class="btn btn-primary" type="submit">Speichern</button>
+        <a class="btn btn-link" href="/admin/guestbook/index/index">Abbrechen</a>
+    </div>
+</form>

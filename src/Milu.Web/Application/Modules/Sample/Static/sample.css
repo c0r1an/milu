@@ -1,0 +1,8 @@
+.sample-hero {
+  background: linear-gradient(135deg, #e9f2ff, #f8fbff);
+  border: 1px solid #cfe2ff;
+}
+
+.sample-hero h1 {
+  color: #123a63;
+}

@@ -1,0 +1,9 @@
+@using Milu.Web
+@using Milu.Web.Models
+@using Milu.Web.Infrastructure.Modules
+@using Milu.Web.Infrastructure.Security
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Hosting
+@inject IModuleCatalog ModuleCatalog
+@inject IMiluPermissionService PermissionService
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

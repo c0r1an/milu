@@ -1,0 +1,52 @@
+@model SampleIndexViewModel
+
+@{
+    ViewData["Title"] = "Sample-Modul";
+}
+
+<link rel="stylesheet" href="~/modules/sample/sample.css" />
+
+<section class="sample-hero p-4 rounded-3 mb-4">
+    <span class="badge text-bg-primary mb-2">Milu-Modul</span>
+    <h1>@Model.ModuleName</h1>
+    <p class="lead mb-0">
+        Das Modul wurde automatisch entdeckt und über den dynamischen
+        Milu-Router geladen.
+    </p>
+</section>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h4">Kompatible Routen</h2>
+                <p>Diese Seiten demonstrieren die modulare Milu-URL-Struktur:</p>
+                <ul>
+                    <li><a href="/sample/index/index">Frontend-Startseite</a></li>
+                    <li><a href="/sample/index/hello/name/Ada">Schlüssel/Wert-Parameter</a></li>
+                    <li><a href="/admin/sample/index/index">Geschützter Admin-Bereich</a></li>
+                </ul>
+                <p class="mb-0">
+                    Modulversion: <strong>@Model.Version</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h4">Registrierte Module</h2>
+                <ul class="list-group list-group-flush">
+                    @foreach (var module in Model.RegisteredModules)
+                    {
+                        <li class="list-group-item px-0 d-flex justify-content-between">
+                            <span>@module.DisplayName</span>
+                            <code>@module.Key @module.Version</code>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+@model IReadOnlyCollection<GuestbookEntry>
+
+@{
+    ViewData["Title"] = "Gästebuch";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Gästebuch</h1>
+        <p class="text-muted mb-0">Nachrichten unserer Besucherinnen und Besucher.</p>
+    </div>
+    <a class="btn btn-primary" href="/guestbook/index/create">Eintrag schreiben</a>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">Noch sind keine Einträge vorhanden.</div>
+}
+else
+{
+    <div class="vstack gap-3">
+        @foreach (var entry in Model)
+        {
+            <article class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between gap-3 mb-2">
+                        <h2 class="h5 mb-0">@entry.Name</h2>
+                        <time class="text-muted small">@entry.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</time>
+                    </div>
+                    <p class="mb-0" style="white-space: pre-wrap">@entry.Message</p>
+                </div>
+            </article>
+        }
+    </div>
+}

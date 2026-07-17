@@ -1,0 +1,48 @@
+@model IReadOnlyCollection<GuestbookEntry>
+
+@{
+    ViewData["Title"] = "Gästebuch verwalten";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Gästebuch verwalten</h1>
+        <p class="text-muted mb-0">Einträge bearbeiten oder löschen.</p>
+    </div>
+    <a class="btn btn-outline-primary" href="/guestbook">Frontend öffnen</a>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+<div class="table-responsive bg-white border rounded">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Nachricht</th>
+                <th>Datum</th>
+                <th class="text-end">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in Model)
+            {
+                <tr>
+                    <td>@entry.Name</td>
+                    <td>@(entry.Message.Length > 80 ? entry.Message[..80] + "…" : entry.Message)</td>
+                    <td>@entry.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-sm btn-outline-primary" href="/admin/guestbook/index/edit/id/@entry.Id">Bearbeiten</a>
+                        <form class="d-inline" action="/admin/guestbook/index/delete/id/@entry.Id" method="post" onsubmit="return confirm('Eintrag wirklich löschen?');">
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Löschen</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

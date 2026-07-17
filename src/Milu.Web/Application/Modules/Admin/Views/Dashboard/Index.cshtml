@@ -1,0 +1,48 @@
+@model AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Übersicht";
+}
+
+<h1>Administration</h1>
+<p class="text-muted">Zentrale Verwaltung der automatisch erkannten Milu-Module.</p>
+
+<div class="row g-3 mt-2">
+    <div class="col-md-4">
+        <a class="card text-decoration-none h-100" href="/admin/modules">
+            <div class="card-body">
+                <div class="display-6">@Model.ModuleCount</div>
+                <div class="text-muted">installierte Module</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a class="card text-decoration-none h-100" href="/admin/guestbook/index/index">
+            <div class="card-body">
+                <div class="display-6">@Model.GuestbookEntryCount</div>
+                <div class="text-muted">Gästebucheinträge</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a class="card text-decoration-none h-100" href="/admin/news/index/index">
+            <div class="card-body">
+                <div class="display-6">@Model.NewsArticleCount</div>
+                <div class="text-muted">Newsbeiträge</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <a class="card text-decoration-none h-100" href="/admin/users">
+            <div class="card-body"><div class="display-6">@Model.UserCount</div><div class="text-muted">Benutzer</div></div>
+        </a>
+    </div>
+    <div class="col-md-6">
+        <a class="card text-decoration-none h-100" href="/admin/groups">
+            <div class="card-body"><div class="display-6">@Model.GroupCount</div><div class="text-muted">Gruppen</div></div>
+        </a>
+    </div>
+</div>

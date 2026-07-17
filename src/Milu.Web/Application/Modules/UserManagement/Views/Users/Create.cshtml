@@ -1,0 +1,16 @@
+@model UserCreateViewModel
+
+@{ ViewData["Title"] = "Benutzer anlegen"; }
+
+<h1>Benutzer anlegen</h1>
+<form action="/admin/users/create" method="post" class="card mt-4">
+    @Html.AntiForgeryToken()
+    <div class="card-body">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="mb-3"><label class="form-label" for="displayName">Anzeigename</label><input class="form-control" id="displayName" name="displayName" value="@Model.DisplayName" required maxlength="120" /></div>
+        <div class="mb-3"><label class="form-label" for="email">E-Mail-Adresse</label><input class="form-control" id="email" name="email" value="@Model.Email" type="email" required /></div>
+        <div class="mb-3"><label class="form-label" for="password">Startpasswort</label><input class="form-control" id="password" name="password" type="password" minlength="8" required /></div>
+        <fieldset class="mb-3"><legend class="h5">Gruppen</legend>@foreach (var role in Model.Roles) { <div class="form-check"><input class="form-check-input" type="checkbox" name="roleIds" value="@role.Id" id="role-@role.Id" checked="@role.Selected" /><label class="form-check-label" for="role-@role.Id">@role.Name</label></div> }</fieldset>
+        <button class="btn btn-primary" type="submit">Benutzer erstellen</button><a class="btn btn-link" href="/admin/users">Abbrechen</a>
+    </div>
+</form>

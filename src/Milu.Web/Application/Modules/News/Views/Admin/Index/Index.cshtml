@@ -1,0 +1,52 @@
+@model IReadOnlyCollection<NewsArticle>
+
+@{
+    ViewData["Title"] = "News verwalten";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>News verwalten</h1>
+        <p class="text-muted mb-0">Beiträge erstellen, bearbeiten und löschen.</p>
+    </div>
+    <a class="btn btn-primary" href="/admin/news/index/create">Neuer Beitrag</a>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+<div class="table-responsive bg-white border rounded">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>Titel</th>
+                <th>Status</th>
+                <th>Datum</th>
+                <th class="text-end">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var article in Model)
+            {
+                <tr>
+                    <td>@article.Title</td>
+                    <td>
+                        <span class="badge @(article.IsPublished ? "text-bg-success" : "text-bg-secondary")">
+                            @(article.IsPublished ? "Veröffentlicht" : "Entwurf")
+                        </span>
+                    </td>
+                    <td>@article.PublishedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-sm btn-outline-primary" href="/admin/news/index/edit/id/@article.Id">Bearbeiten</a>
+                        <form class="d-inline" action="/admin/news/index/delete/id/@article.Id" method="post" onsubmit="return confirm('Beitrag wirklich löschen?');">
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Löschen</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

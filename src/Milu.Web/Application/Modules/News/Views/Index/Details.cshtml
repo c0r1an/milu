@@ -1,0 +1,15 @@
+@model NewsArticle
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<article class="mx-auto" style="max-width: 800px">
+    <a class="text-decoration-none" href="/news">← Zur Newsübersicht</a>
+    <header class="my-4">
+        <time class="text-muted">@Model.PublishedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</time>
+        <h1 class="mt-2">@Model.Title</h1>
+        <p class="lead">@Model.Summary</p>
+    </header>
+    <div style="white-space: pre-wrap">@Model.Content</div>
+</article>

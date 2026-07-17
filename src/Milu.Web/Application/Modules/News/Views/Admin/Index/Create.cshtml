@@ -1,0 +1,32 @@
+@model NewsInputModel
+
+@{
+    ViewData["Title"] = "Newsbeitrag erstellen";
+}
+
+<h1>Newsbeitrag erstellen</h1>
+
+<form action="/admin/news/index/create" method="post" class="card">
+    @Html.AntiForgeryToken()
+    <div class="card-body">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control" maxlength="160" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="Summary" class="form-label"></label>
+            <textarea asp-for="Summary" class="form-control" rows="3" maxlength="500"></textarea>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Content" class="form-label"></label>
+            <textarea asp-for="Content" class="form-control" rows="10" maxlength="10000"></textarea>
+        </div>
+        <div class="form-check mb-3">
+            <input asp-for="IsPublished" class="form-check-input" />
+            <label asp-for="IsPublished" class="form-check-label"></label>
+        </div>
+        <button class="btn btn-primary" type="submit">Erstellen</button>
+        <a class="btn btn-link" href="/admin/news/index/index">Abbrechen</a>
+    </div>
+</form>

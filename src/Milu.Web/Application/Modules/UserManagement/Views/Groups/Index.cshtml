@@ -1,0 +1,10 @@
+@model IReadOnlyCollection<GroupListItem>
+
+@{ ViewData["Title"] = "Gruppenverwaltung"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4"><div><h1>Gruppenverwaltung</h1><p class="text-muted mb-0">Gruppen und Modulrechte zentral verwalten.</p></div><div class="d-flex gap-2"><a class="btn btn-outline-primary" href="/admin/users">Benutzer</a><a class="btn btn-primary" href="/admin/groups/create">Neue Gruppe</a></div></div>
+@if (TempData["SuccessMessage"] is string success) { <div class="alert alert-success">@success</div> }
+@if (TempData["ErrorMessage"] is string error) { <div class="alert alert-danger">@error</div> }
+<div class="table-responsive bg-white border rounded"><table class="table table-hover align-middle mb-0"><thead><tr><th>Gruppe</th><th>Beschreibung</th><th>Benutzer</th><th class="text-end">Aktionen</th></tr></thead><tbody>
+@foreach (var group in Model) { <tr><td><strong>@group.Name</strong>@if (group.IsSystemRole) { <span class="badge text-bg-secondary ms-2">System</span> }</td><td>@group.Description</td><td>@group.UserCount</td><td class="text-end"><a class="btn btn-sm btn-outline-primary" href="/admin/groups/edit/@group.Id">Rechte bearbeiten</a>@if (!group.IsSystemRole) { <form class="d-inline" action="/admin/groups/delete/@group.Id" method="post">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-danger">Löschen</button></form> }</td></tr> }
+</tbody></table></div>

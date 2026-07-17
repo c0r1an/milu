@@ -1,0 +1,14 @@
+@model HelloViewModel
+
+@{
+    ViewData["Title"] = "Routenparameter";
+}
+
+<div class="text-center py-5">
+    <h1>Hallo, @Model.Name!</h1>
+    <p class="lead">
+        Der Wert wurde aus einem kompatiblen Schlüssel/Wert-Paar gebunden.
+    </p>
+    <p><code>@Model.SourceRoute</code></p>
+    <a class="btn btn-primary" href="/sample/index/index">Zurück zum Sample-Modul</a>
+</div>

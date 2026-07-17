@@ -1,0 +1,52 @@
+@inject IModuleCatalog ModuleCatalog
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Milu Administration</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin">Milu Administration</a>
+            <div class="d-flex align-items-center gap-3 text-white">
+                <a class="link-light text-decoration-none" href="/">Frontend</a>
+                <span class="small">@User.Identity?.Name</span>
+                <form action="/account/logout" method="post">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-sm btn-outline-light" type="submit">Abmelden</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <aside class="col-md-3 col-lg-2 bg-white border-end p-3">
+                <nav class="nav nav-pills flex-column gap-1">
+                    <a class="nav-link" href="/admin">Übersicht</a>
+                    <a class="nav-link fw-semibold" href="/admin/modules">Module</a>
+                    <div class="border-top mt-2 pt-2">
+                        @foreach (var module in ModuleCatalog.Modules.Where(item => item.HasAdminArea))
+                        {
+                            @if (await PermissionService.HasPermissionAsync(User, module.Key, PermissionOperation.ModuleView))
+                            {
+                                <a class="nav-link text-dark" href="@module.AdminRoute">@module.DisplayName</a>
+                            }
+                        }
+                    </div>
+                </nav>
+            </aside>
+            <main class="col-md-9 col-lg-10 p-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
